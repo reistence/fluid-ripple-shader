@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import fragment from '../shaders/fragment.glsl';
 import vertex from '../shaders/vertex.glsl';
+import brush from '../assets/brush.png';
 
 const device = {
   width: window.innerWidth,
@@ -61,16 +62,20 @@ export default class Three {
         progress: { type: 'f', value: 0 }
       }
     });
+    this.planeMaterial1 = new T.MeshBasicMaterial({
+      transparent: true,
+      map: new T.TextureLoader().load(brush)
+    });
 
-    this.planeMesh = new T.Mesh(this.planeGeometry, this.planeMaterial);
+    this.planeMesh = new T.Mesh(this.planeGeometry, this.planeMaterial1);
     this.scene.add(this.planeMesh);
   }
 
   render() {
     const elapsedTime = this.clock.getElapsedTime();
 
-    this.planeMesh.rotation.x = 0.2 * elapsedTime;
-    this.planeMesh.rotation.y = 0.1 * elapsedTime;
+    // this.planeMesh.rotation.x = 0.2 * elapsedTime;
+    // this.planeMesh.rotation.y = 0.1 * elapsedTime;
 
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.render.bind(this));
@@ -91,3 +96,6 @@ export default class Three {
     this.renderer.setPixelRatio(Math.min(device.pixelRatio, 2));
   }
 }
+
+console.log(brush);
+
