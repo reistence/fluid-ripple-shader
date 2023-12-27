@@ -16,6 +16,8 @@ export default class Three {
   constructor(canvas) {
     this.canvas = canvas;
     this.mouse = new T.Vector2();
+    this.prevMouse = new T.Vector2();
+    this.currentWave = 0;
 
     this.scene = new T.Scene();
     this.width = window.innerWidth;
@@ -91,7 +93,7 @@ export default class Three {
     //   map: new T.TextureLoader().load(brush)
     // });
 
-    this.max = 1;
+    this.max = 50;
     this.meshes = [];
 
     for (let i = 0; i < this.max; i++) {
@@ -104,7 +106,7 @@ export default class Three {
       });
 
       let mesh = new T.Mesh(this.planeGeometry, m);
-      // mesh.visible = false;
+      mesh.visible = false;
       mesh.rotation.z = 2 * Math.PI * Math.random();
 
       this.scene.add(mesh);
@@ -115,18 +117,38 @@ export default class Three {
     // this.scene.add(this.planeMesh);
   }
 
+  setNewWave(x, y, index) {
+    let m = this.meshes[index];
+    m.visible = true;
+    m.position.x = x;
+    m.position.y = y;
+  }
+
+  trackMousePos() {
+    if (
+      Math.abs(this.mouse.x - this.prevMouse.x) < 4 &&
+      Math.abs(this.mouse.y - this.prevMouse.y) < 4
+    ) {
+    } else {
+      this.setNewWave(this.mouse.x, this.mouse.y, this.currentWave);
+      this.currentWave = (this.currentWave + 1) % this.max;
+      // console.log(this.currentWave);
+    }
+
+    this.prevMouse.x = this.mouse.x;
+    this.prevMouse.y = this.mouse.y;
+  }
+
   render() {
     const elapsedTime = this.clock.getElapsedTime();
 
-    // this.planeMesh.rotation.x = 0.2 * elapsedTime;
-    // this.planeMesh.rotation.y = 0.1 * elapsedTime;
-
+    this.trackMousePos();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.render.bind(this));
-    this.meshes.forEach((mesh) => {
-      mesh.position.x = this.mouse.x;
-      mesh.position.y = this.mouse.y;
-    });
+    // this.meshes.forEach((mesh) => {
+    //   mesh.position.x = this.mouse.x;
+    //   mesh.position.y = this.mouse.y;
+    // });
   }
 
   setResize() {
