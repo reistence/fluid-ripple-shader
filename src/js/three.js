@@ -20,6 +20,8 @@ export default class Three {
     this.currentWave = 0;
 
     this.scene = new T.Scene();
+    this.scene1 = new T.Scene();
+
     this.width = window.innerWidth;
     this.height = window.innerHeight;
 
@@ -44,6 +46,12 @@ export default class Three {
     );
     this.camera.position.set(0, 0, 2);
     this.scene.add(this.camera);
+
+    this.baseTexture = new T.WebGL3DRenderTarget(this.width, this.height, {
+      minFilter: T.LinearFilter,
+      magFilter: T.LinearFilter,
+      format: T.RGBAFormat
+    });
 
     this.renderer = new T.WebGLRenderer({
       canvas: this.canvas,
@@ -77,7 +85,7 @@ export default class Three {
   }
 
   setGeometry() {
-    this.planeGeometry = new T.PlaneGeometry(100, 100, 1, 1);
+    this.planeGeometry = new T.PlaneGeometry(30, 30, 1, 1);
     // this.planeMaterial = new T.ShaderMaterial({
     //   side: T.DoubleSide,
     //   wireframe: true,
@@ -122,6 +130,8 @@ export default class Three {
     m.visible = true;
     m.position.x = x;
     m.position.y = y;
+    m.material.opacity = 1;
+    m.scale.x = m.scale.y = 1;
   }
 
   trackMousePos() {
@@ -145,10 +155,21 @@ export default class Three {
     this.trackMousePos();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.render.bind(this));
-    // this.meshes.forEach((mesh) => {
-    //   mesh.position.x = this.mouse.x;
-    //   mesh.position.y = this.mouse.y;
-    // });
+    this.meshes.forEach((mesh) => {
+      // mesh.position.x = this.mouse.x;
+      // mesh.position.y = this.mouse.y;
+
+      if (mesh.visible) {
+        mesh.rotation.z += 0.02;
+        mesh.material.opacity *= 0.95;
+        mesh.scale.x = 0.98 * mesh.scale.x + 0.1;
+        mesh.scale.y = mesh.scale.x;
+
+        if (mesh.material.opacity < 0.02) {
+          mesh.visible = false;
+        }
+      }
+    });
   }
 
   setResize() {
