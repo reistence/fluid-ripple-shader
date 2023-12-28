@@ -6,7 +6,7 @@ import fragment from '../shaders/fragment.glsl';
 import vertex from '../shaders/vertex.glsl';
 import brush from '../assets/brush.png';
 
-import bg from '../assets/og1.jpg';
+import bg from '../assets/og2.jpg';
 const device = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -62,7 +62,7 @@ export default class Three {
     });
     this.renderer.setSize(device.width, device.height);
     this.renderer.setPixelRatio(Math.min(device.pixelRatio, 2));
-    this.controls = new OrbitControls(this.camera, this.canvas);
+    // this.controls = new OrbitControls(this.camera, this.canvas);
 
     this.clock = new T.Clock();
 
@@ -83,10 +83,19 @@ export default class Three {
       this.mouse.x = e.clientX - this.width / 2;
       this.mouse.y = this.height / 2 - e.clientY;
     });
+
+    window.addEventListener('click', (e) => {
+      this.mouse.x = e.clientX - this.width / 2;
+      this.mouse.y = this.height / 2 - e.clientY;
+
+      // Trigger the wave creation on click
+      this.setNewWave(this.mouse.x, this.mouse.y, this.currentWave);
+      this.currentWave = (this.currentWave + 1) % this.max;
+    });
   }
 
   setGeometry() {
-    this.planeGeometry = new T.PlaneGeometry(50, 50, 10, 10);
+    this.planeGeometry = new T.PlaneGeometry(64, 64, 1, 1);
     this.planeGeometryFullScreen = new T.PlaneGeometry(
       this.width,
       this.height,
@@ -112,7 +121,7 @@ export default class Three {
     //   map: new T.TextureLoader().load(brush)
     // });
 
-    this.max = 50;
+    this.max = 100;
     this.meshes = [];
 
     for (let i = 0; i < this.max; i++) {
@@ -145,7 +154,7 @@ export default class Three {
     m.position.x = x;
     m.position.y = y;
     m.material.opacity = 1;
-    m.scale.x = m.scale.y = 1;
+    m.scale.x = m.scale.y = 0.2;
   }
 
   trackMousePos() {
@@ -185,12 +194,12 @@ export default class Three {
       // mesh.position.y = this.mouse.y;
 
       if (mesh.visible) {
-        mesh.rotation.z += 0.02;
+        mesh.rotation.z += 0.008;
         mesh.material.opacity *= 0.95;
-        mesh.scale.x = 0.98 * mesh.scale.x + 0.1;
+        mesh.scale.x = 0.982 * mesh.scale.x + 0.108;
         mesh.scale.y = mesh.scale.x;
 
-        if (mesh.material.opacity < 0.02) {
+        if (mesh.material.opacity < 0.002) {
           mesh.visible = false;
         }
       }

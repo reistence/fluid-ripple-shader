@@ -20,7 +20,7 @@ void main() {
 
   vec2 dir = vec2(sin(theta), cos(theta));
 
-  vec2 uv = vUv + dir * displacement.r ; 
+  vec2 uv = vUv + dir * displacement.r * 0.1; 
 
   vec4 color = texture2D(uTexture, uv);
 
