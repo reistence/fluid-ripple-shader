@@ -6,6 +6,7 @@ import fragment from '../shaders/fragment.glsl';
 import vertex from '../shaders/vertex.glsl';
 import brush from '../assets/brush.png';
 
+import bg from '../assets/og1.jpg';
 const device = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -47,7 +48,7 @@ export default class Three {
     this.camera.position.set(0, 0, 2);
     this.scene.add(this.camera);
 
-    this.baseTexture = new T.WebGL3DRenderTarget(this.width, this.height, {
+    this.baseTexture = new T.WebGLRenderTarget(this.width, this.height, {
       minFilter: T.LinearFilter,
       magFilter: T.LinearFilter,
       format: T.RGBAFormat
@@ -85,16 +86,26 @@ export default class Three {
   }
 
   setGeometry() {
-    this.planeGeometry = new T.PlaneGeometry(30, 30, 1, 1);
-    // this.planeMaterial = new T.ShaderMaterial({
-    //   side: T.DoubleSide,
-    //   wireframe: true,
-    //   fragmentShader: fragment,
-    //   vertexShader: vertex,
-    //   uniforms: {
-    //     progress: { type: 'f', value: 0 }
-    //   }
-    // });
+    this.planeGeometry = new T.PlaneGeometry(50, 50, 10, 10);
+    this.planeGeometryFullScreen = new T.PlaneGeometry(
+      this.width,
+      this.height,
+      1,
+      1
+    );
+    this.planeMaterial = new T.ShaderMaterial({
+      side: T.DoubleSide,
+      // wireframe: true,
+      fragmentShader: fragment,
+      vertexShader: vertex,
+      uniforms: {
+        time: { value: 0 },
+        progress: { type: 'f', value: 0 },
+        uDisplacement: { value: null },
+        uTexture: { value: new T.TextureLoader().load(bg) },
+        resolution: { value: new T.Vector4() }
+      }
+    });
 
     // this.planeMaterial1 = new T.MeshBasicMaterial({
     //   transparent: true,
@@ -121,8 +132,11 @@ export default class Three {
       this.meshes.push(mesh);
     }
 
-    // this.planeMesh = new T.Mesh(this.planeGeometry, this.planeMaterial1);
-    // this.scene.add(this.planeMesh);
+    this.planeMesh = new T.Mesh(
+      this.planeGeometryFullScreen,
+      this.planeMaterial
+    );
+    this.scene1.add(this.planeMesh);
   }
 
   setNewWave(x, y, index) {
@@ -150,11 +164,22 @@ export default class Three {
   }
 
   render() {
+    this.trackMousePos();
     const elapsedTime = this.clock.getElapsedTime();
 
-    this.trackMousePos();
-    this.renderer.render(this.scene, this.camera);
+    this.time += 0.05;
+    this.planeMaterial.uniforms.time.value = this.time;
+
     requestAnimationFrame(this.render.bind(this));
+
+    this.renderer.setRenderTarget(this.baseTexture);
+    this.renderer.render(this.scene, this.camera);
+
+    this.planeMaterial.uniforms.uDisplacement.value = this.baseTexture.texture;
+    this.renderer.setRenderTarget(null);
+    this.renderer.clear();
+    this.renderer.render(this.scene1, this.camera);
+
     this.meshes.forEach((mesh) => {
       // mesh.position.x = this.mouse.x;
       // mesh.position.y = this.mouse.y;
