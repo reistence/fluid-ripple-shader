@@ -5,6 +5,12 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import fragment from '../shaders/fragment.glsl';
 import vertex from '../shaders/vertex.glsl';
 
+// IMG
+
+import amber from '../assets/amber.jpg';
+import blend from '../assets/blend.jpg';
+import shiny from '../assets/sniny.png';
+
 const device = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -64,6 +70,12 @@ export default class Three {
 
     this.planeMesh = new T.Mesh(this.planeGeometry, this.planeMaterial);
     this.scene.add(this.planeMesh);
+  }
+
+  createScene() {
+    let scene = new T.Scene();
+
+    return scene;
   }
 
   render() {
