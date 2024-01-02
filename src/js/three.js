@@ -7,10 +7,13 @@ import vertex from '../shaders/vertex.glsl';
 
 // IMG
 
-import amber from '../assets/amber.jpg';
-import blend from '../assets/blend.jpg';
+import black from '../assets/balckcap.jpg';
+import red from '../assets/blend.jpg';
 import shiny from '../assets/sniny.png';
-
+import redBg from '../assets/redBg.png';
+import starsBg from '../assets/startbg.png';
+import irridescentBg from '../assets/irridescent.png';
+import blackBg from '../assets/blackBg.jpg';
 const device = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -20,8 +23,29 @@ const device = {
 export default class Three {
   constructor(canvas) {
     this.canvas = canvas;
+    this.scenes = [
+      {
+        bg: blackBg,
+        matcap: black,
+        geometry: new T.BoxGeometry(0.1, 0.1, 0.1)
+      },
+      {
+        bg: irridescentBg,
+        matcap: shiny,
+        geometry: new T.BoxGeometry(0.1, 0.1, 0.1)
+      },
+      {
+        bg: redBg,
+        matcap: redBg,
+        geometry: new T.BoxGeometry(0.1, 0.1, 0.1)
+      }
+    ];
 
-    this.scene = new T.Scene();
+    // this.scene = this.createScene(bg, matcap);
+
+    this.scenes.forEach((o, index) => {
+      o.scene = this.createScene(o.bg, o.matcap, o.geometry);
+    });
 
     this.camera = new T.PerspectiveCamera(
       75,
@@ -30,7 +54,7 @@ export default class Three {
       100
     );
     this.camera.position.set(0, 0, 2);
-    this.scene.add(this.camera);
+    // this.scene.add(this.camera);
 
     this.renderer = new T.WebGLRenderer({
       canvas: this.canvas,
@@ -52,8 +76,8 @@ export default class Three {
   }
 
   setLights() {
-    this.ambientLight = new T.AmbientLight(new T.Color(1, 1, 1, 1));
-    this.scene.add(this.ambientLight);
+    this.ambientLight = new T.AmbientLight(new T.Color(1, 1, 1, 0.1));
+    // this.scene.add(this.ambientLight);
   }
 
   setGeometry() {
@@ -69,11 +93,28 @@ export default class Three {
     });
 
     this.planeMesh = new T.Mesh(this.planeGeometry, this.planeMaterial);
-    this.scene.add(this.planeMesh);
+    // this.scene.add(this.planeMesh);
   }
 
-  createScene() {
+  createScene(bg, matcap, geometry) {
     let scene = new T.Scene();
+    let bgTexture = new T.TextureLoader().load(bg);
+    scene.background = bgTexture;
+    let material = new T.MeshMatcapMaterial({
+      matcap: new T.TextureLoader().load(matcap)
+    });
+
+    // let geometry = new T.BoxGeometry(0.2, 0.2, 0.2);
+    let mesh = new T.Mesh(geometry, material);
+
+    for (let i = 0; i < 300; i++) {
+      let random = new T.Vector3().randomDirection();
+      let clone = mesh.clone();
+      clone.position.copy(random);
+      clone.rotation.x = Math.random();
+      clone.rotation.y = Math.random();
+      scene.add(clone);
+    }
 
     return scene;
   }
@@ -81,7 +122,7 @@ export default class Three {
   render() {
     const elapsedTime = this.clock.getElapsedTime();
 
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scenes[0].scene, this.camera);
     requestAnimationFrame(this.render.bind(this));
   }
 

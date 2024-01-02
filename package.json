@@ -25,6 +25,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@use-gesture/vanilla": "^10.3.0",
     "@vitejs/plugin-legacy": "^5.2.0",
     "three": "^0.160.0"
   },
