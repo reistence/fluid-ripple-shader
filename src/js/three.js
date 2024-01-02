@@ -5,13 +5,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import fragment from '../shaders/fragment.glsl';
 import vertex from '../shaders/vertex.glsl';
 
-// IMG
+import { Lethargy } from 'lethargy';
+import { WheelGesture } from '@use-gesture/vanilla';
 
+// IMG
 import black from '../assets/balckcap.jpg';
 import red from '../assets/blend.jpg';
 import shiny from '../assets/sniny.png';
 import redBg from '../assets/redBg.png';
-import starsBg from '../assets/startbg.png';
 import irridescentBg from '../assets/irridescent.png';
 import blackBg from '../assets/blackBg.jpg';
 const device = {
@@ -43,9 +44,9 @@ export default class Three {
 
     // this.scene = this.createScene(bg, matcap);
 
-    this.scenes.forEach((o, index) => {
-      o.scene = this.createScene(o.bg, o.matcap, o.geometry);
-    });
+    this.lethargy = new Lethargy();
+
+    this.gesture = new WheelGesture(document.body, (state) => {});
 
     this.camera = new T.PerspectiveCamera(
       75,
@@ -62,17 +63,27 @@ export default class Three {
       antialias: true,
       preserveDrawingBuffer: true
     });
+
     this.renderer.setSize(device.width, device.height);
     this.renderer.setPixelRatio(Math.min(device.pixelRatio, 2));
 
-    this.controls = new OrbitControls(this.camera, this.canvas);
+    this.scenes.forEach((o, index) => {
+      o.scene = this.createScene(o.bg, o.matcap, o.geometry);
+
+      this.renderer.compile(o.scene, this.camera);
+
+      o.target = new T.WebGL3DRenderTarget(this.width, this.height);
+    });
+
+    // this.controls = new OrbitControls(this.camera, this.canvas);
 
     this.clock = new T.Clock();
 
     this.setLights();
     this.setGeometry();
-    this.render();
+    this.initPost();
     this.setResize();
+    this.render();
   }
 
   setLights() {
@@ -119,10 +130,38 @@ export default class Three {
     return scene;
   }
 
+  initPost() {
+    this.postScene = new T.Scene();
+    let frustunSize = 1;
+    let aspect = 1;
+    this.postCamera = new T.OrthographicCamera(
+      (frustunSize * aspect) / -2,
+      (frustunSize * aspect) / 2,
+      frustunSize / 2,
+      frustunSize / -2,
+      -1000,
+      1000
+    );
+
+    let material = new T.ShaderMaterial({
+      side: T.DoubleSide,
+      uniforms: {
+        uTexture1: { value: new T.TextureLoader().load(blackBg) },
+        uTexture2: { value: new T.TextureLoader().load(blackBg) }
+      },
+      vertexShader: vertex,
+      fragmentShader: fragment
+    });
+
+    let quad = new T.Mesh(new T.PlaneGeometry(1, 1), material);
+
+    this.postScene.add(quad);
+  }
+
   render() {
     const elapsedTime = this.clock.getElapsedTime();
 
-    this.renderer.render(this.scenes[0].scene, this.camera);
+    this.renderer.render(this.postScene, this.postCamera);
     requestAnimationFrame(this.render.bind(this));
   }
 
