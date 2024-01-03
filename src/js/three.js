@@ -39,7 +39,7 @@ export default class Three {
       {
         bg: irridescentBg,
         matcap: shiny,
-        geometry: new T.TorusGeometry(0.3, 0.05, 50, 10)
+        geometry: new T.TorusGeometry(0.15, 0.05, 50, 10)
       },
       {
         bg: redBg,
