@@ -192,7 +192,7 @@ export default class Three {
 
     this.next = Math.floor((this.currentState + 1) % this.scenes.length);
 
-    this.progress = this.currentState % 1;
+    this.settings.progress = this.currentState % 1;
 
     this.renderer.setRenderTarget(this.scenes[this.current].target);
     this.renderer.render(this.scenes[this.current].scene, this.camera);
