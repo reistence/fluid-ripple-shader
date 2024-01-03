@@ -197,10 +197,8 @@ export default class Three {
     this.renderer.setRenderTarget(this.scenes[this.current].target);
     this.renderer.render(this.scenes[this.current].scene, this.camera);
 
-    this.next = (this.current + 1) % this.scenes.length;
-
-    this.renderer.setRenderTarget(this.scenes[this.current + 1].target);
-    this.renderer.render(this.scenes[this.current + 1].scene, this.camera);
+    this.renderer.setRenderTarget(this.scenes[this.next].target);
+    this.renderer.render(this.scenes[this.next].scene, this.camera);
 
     this.renderer.setRenderTarget(null);
 
