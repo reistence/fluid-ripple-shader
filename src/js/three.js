@@ -39,12 +39,12 @@ export default class Three {
       {
         bg: irridescentBg,
         matcap: shiny,
-        geometry: new T.BoxGeometry(0.1, 0.1, 0.1)
+        geometry: new T.TorusGeometry(0.3, 0.05, 50, 10)
       },
       {
         bg: redBg,
         matcap: redBg,
-        geometry: new T.BoxGeometry(0.1, 0.1, 0.1)
+        geometry: new T.SphereGeometry(0.1, 29, 29)
       }
     ];
 
@@ -111,8 +111,8 @@ export default class Three {
     this.settings = {
       progress: 0
     };
-    this.gui = new GUI();
-    this.gui.add(this.settings, 'progress', 0, 1, 0.01).onChange((val) => {});
+    // this.gui = new GUI();
+    // this.gui.add(this.settings, 'progress', 0, 1, 0.01).onChange((val) => {});
   }
 
   setGeometry() {
