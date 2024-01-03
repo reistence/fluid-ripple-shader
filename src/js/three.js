@@ -8,6 +8,9 @@ import vertex from '../shaders/vertex.glsl';
 import { Lethargy } from 'lethargy';
 import { WheelGesture } from '@use-gesture/vanilla';
 
+import GUI from 'lil-gui';
+import VirtualScroll from 'virtual-scroll';
+
 // IMG
 import black from '../assets/balckcap.jpg';
 import red from '../assets/blend.jpg';
@@ -23,6 +26,9 @@ const device = {
 
 export default class Three {
   constructor(canvas) {
+    this.scroller = new VirtualScroll();
+
+    this.current = 0;
     this.canvas = canvas;
     this.scenes = [
       {
@@ -42,11 +48,13 @@ export default class Three {
       }
     ];
 
+    this.time = 0;
+
     // this.scene = this.createScene(bg, matcap);
 
-    this.lethargy = new Lethargy();
+    // this.lethargy = new Lethargy();
 
-    this.gesture = new WheelGesture(document.body, (state) => {});
+    // this.gesture = new WheelGesture(document.body, (state) => {});
 
     this.camera = new T.PerspectiveCamera(
       75,
@@ -72,23 +80,39 @@ export default class Three {
 
       this.renderer.compile(o.scene, this.camera);
 
-      o.target = new T.WebGL3DRenderTarget(this.width, this.height);
+      o.target = new T.WebGLRenderTarget(device.width, device.height);
     });
 
     // this.controls = new OrbitControls(this.camera, this.canvas);
 
     this.clock = new T.Clock();
 
+    this.currentState = 0;
+
     this.setLights();
+    this.setUpSettings();
     this.setGeometry();
     this.initPost();
     this.setResize();
     this.render();
+    this.scroller.on((event) => {
+      this.currentState -= event.deltaY / 4000;
+
+      this.currentState = (this.currentState + 3000) % 3;
+    });
   }
 
   setLights() {
     this.ambientLight = new T.AmbientLight(new T.Color(1, 1, 1, 0.1));
     // this.scene.add(this.ambientLight);
+  }
+
+  setUpSettings() {
+    this.settings = {
+      progress: 0
+    };
+    this.gui = new GUI();
+    this.gui.add(this.settings, 'progress', 0, 1, 0.01).onChange((val) => {});
   }
 
   setGeometry() {
@@ -143,9 +167,10 @@ export default class Three {
       1000
     );
 
-    let material = new T.ShaderMaterial({
+    this.material = new T.ShaderMaterial({
       side: T.DoubleSide,
       uniforms: {
+        progress: { value: 0 },
         uTexture1: { value: new T.TextureLoader().load(blackBg) },
         uTexture2: { value: new T.TextureLoader().load(blackBg) }
       },
@@ -153,7 +178,7 @@ export default class Three {
       fragmentShader: fragment
     });
 
-    let quad = new T.Mesh(new T.PlaneGeometry(1, 1), material);
+    let quad = new T.Mesh(new T.PlaneGeometry(1, 1), this.material);
 
     this.postScene.add(quad);
   }
@@ -161,8 +186,39 @@ export default class Three {
   render() {
     const elapsedTime = this.clock.getElapsedTime();
 
-    this.renderer.render(this.postScene, this.postCamera);
+    this.time += 0.05;
+
+    this.current = Math.floor(this.currentState);
+
+    this.next = Math.floor((this.currentState + 1) % this.scenes.length);
+
+    this.progress = this.currentState % 1;
+
+    this.renderer.setRenderTarget(this.scenes[this.current].target);
+    this.renderer.render(this.scenes[this.current].scene, this.camera);
+
+    this.next = (this.current + 1) % this.scenes.length;
+
+    this.renderer.setRenderTarget(this.scenes[this.current + 1].target);
+    this.renderer.render(this.scenes[this.current + 1].scene, this.camera);
+
+    this.renderer.setRenderTarget(null);
+
+    this.material.uniforms.uTexture1.value =
+      this.scenes[this.current].target.texture;
+
+    this.material.uniforms.uTexture2.value =
+      this.scenes[this.next].target.texture;
+
+    this.material.uniforms.progress.value = this.settings.progress;
+
+    // update scenes
+    this.scenes.forEach((o) => {
+      o.scene.rotation.y = this.time * 0.1;
+    });
+
     requestAnimationFrame(this.render.bind(this));
+    this.renderer.render(this.postScene, this.postCamera);
   }
 
   setResize() {
